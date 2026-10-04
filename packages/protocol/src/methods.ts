@@ -14,6 +14,8 @@ export const Method = {
   worldGetBlocks: 'world.getBlocks',
   worldGetHeight: 'world.getHeight',
   worldSpawnParticle: 'world.spawnParticle',
+  worldPlaySound: 'world.playSound',
+  worldPlayBlockSound: 'world.playBlockSound',
   worldSpawnEntity: 'world.spawnEntity',
   connectionFlush: 'connection.flush',
   eventsPoll: 'events.poll',
@@ -27,6 +29,10 @@ export const Method = {
   entityGetDirection: 'entity.getDirection',
   entitySetDirection: 'entity.setDirection',
   worldStrikeLightning: 'world.strikeLightning',
+  worldGetNearbyEntities: 'world.getNearbyEntities',
+  entityGetPose: 'entity.getPose',
+  entitySetPose: 'entity.setPose',
+  entityRemove: 'entity.remove',
 } as const
 
 export type Method = (typeof Method)[keyof typeof Method]

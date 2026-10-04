@@ -1,3 +1,5 @@
-coverage
-dist
-test-results
+node_modules/
+dist/
+coverage/
+artifacts/
+package-lock.json

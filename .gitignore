@@ -1,8 +1,9 @@
-/coverage
-/dist
-/node_modules
-/test-results
+node_modules/
+dist/
+coverage/
+artifacts/
 *.log
 .DS_Store
 CLAUDE.md
 NOTES_ja.md
+handoff-materials/

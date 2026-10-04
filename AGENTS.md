@@ -1,6 +1,6 @@
-# minecraft-remote-protocol
+# minecraft-remote-tooling
 
-Minecraft Remote Protocol移管候補として作成され、現在park中の公開bootstrap repositoryです。現行ownerではありません。
+Protocol projection・共有fixture・WireScope・Bridgeの共通ownerです。人間可読SSOTはknowledge repositoryにあります。
 
 ## McRemote SSOT
 
@@ -34,14 +34,17 @@ SSOT repositoryへアクセスできない場合は作業を止め、その旨�
 
 このfileはSSOTを複製しません。複製はdriftを生みます。
 
-- 関連spoke: `10-protocol/`
+- 関連spoke: `10-protocol/`、`15-wirescope/`
 
 ## Repository固有の指示
 
-- park中はcontract、fixture、package、tooling、consumer参照を変更しません。
-- 現行のexecutable projection／shared fixture ownerは`Naohiro2g/scratch-editor:mc-remote/protocol`です。
-- 本repositoryからsuccessor fixture、package、releaseを発行せず、b7 release inputとして扱いません。
-- post-b7の人間レビューでProtocol、conformance、WireScope、Bridge、TCP／browser接続を一体評価するまで移管作業を再開しません。
-- consumer固有実装、Scratch block、McRemote handler、Python／Java Client APIを本repositoryへ移しません。
-- packageは別途批准されるまでprivateのままにし、npmへpublishしません。
+- 構成は`packages/protocol`、`packages/live`（WireScope）、`packages/bridge`。各packageは独立したprivate workspaceです。
+- Protocolはdependency-free leafです。Scratch VM、GUIとBridgeはprotocol packageをruntimeでimportしません。
+- 全体のinstallはrootで`npm ci`、buildは`npm run build`、testは`npm test`。TypeScript／Vite／Vitestを使います。
+- bug修正は先に失敗するtestを追加し、既存の失敗の意味を保持します。型・定数・fixtureはknowledgeの批准済み契約から投影します。
+- 公開b8のfixture 12件を変更しません。追加の契約caseは新しいfixtureで発行します。
+- Scratch固有source、GUI／VM、McRemote handler、Python／Java Client APIは本repositoryへ移しません。
+- npm publish、sharedへのdeploy、Git tag／Release公開は明示された指示でのみ行います。
+- candidateはCIのworkflow artifactで返します。release用のWireScope ZIPとdetached manifestは対で扱います。
+- BridgeのDocker build contextはrepository rootです。Dockerfileは`packages/bridge/Dockerfile`にあります。
 - secret、private endpoint、credential、UUIDの実値をsource、fixture、logへ残しません。

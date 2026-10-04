@@ -1,30 +1,14 @@
-# Protocol移管候補bootstrap記録
+# b9共通tooling移管
 
-> 状態: park。以下はsnapshot importのprovenanceであり、owner移管完了を示さない。
+- 批准: knowledge `900f6f4b8027d265a62ba7f139d4f3b1bbe78100`、DECISIONS `2026-10-05-01`／`2026-10-05-02`
+- 移管元: `Naohiro2g/scratch-editor@c7505c887c5c71a942d9f1f190b32a5da00544bc`（契約2件とWireScope列幅を入れたdevelop）
+- `mc-remote/protocol` → `packages/protocol`
+- `mc-remote/live` → `packages/live`
+- `mc-remote/bridge` → `packages/bridge`
+- 公開b8の基線: `691576f60b7f0824e1753bd6823901d01fbe2422`のfixture 12件。追加fixtureは`chat-event-compat-v23.2.json`（33 case）です。
+- 旧bootstrapのhistoryは保持し、古いpark snapshotを現在のsourceとして使いません。
+- fixtureのbytesは維持します。配布物の比較は、同じ機能版のZIP内assetのbytesで行います。sourceの記録とOCI metadataは移管で変わります。
+- ScratchはGUI／VM、固有source、product/runtime contractを保持します。新ownerのfixtureとWireScope・Bridge成果物を固定identityで取得します。
+- rollbackは公開b8のScratch sourceとRelease setへ戻します。b8のtag／history／成果物を変更しません。
 
-## 移管元
-
-- repository: `Naohiro2g/scratch-editor`
-- source commit: `607cda40588ec4579c503d457c3784385419ac65`
-- source path: `mc-remote/protocol`
-- original introduction: `48fdac6e0ef7ea162bf796a9b9eea26a2d07c786`
-- imported scope: tracked package source、設定、test、共有fixture
-
-本repositoryの初期commitは、上記source commitのsubtree snapshotをrootへ移したものです。元repositoryのcommit historyと
-既存tag／release evidenceは書き換えず、過去fixtureのprovenanceとして参照します。
-
-## 現在の所有境界
-
-- 人間可読のProtocol SSOT: `mc-remote-knowledge/10-protocol`
-- executable projection／shared fixture owner: `Naohiro2g/scratch-editor:mc-remote/protocol`
-- 本repository: 未採用の移管candidate snapshot
-- consumers: McRemote、Minecraft Remote for Python、Scratch Client、Java Client Library、将来の独立実装
-
-post-b7の横断reviewではProtocol、conformance、WireScope、Bridge、TCP／browser接続を一体で評価します。共通TypeScript
-tooling monorepo案は有力候補ですが、WireScope分離案、hybrid、Bridgeの維持／廃止を含む最終topologyは未決です。
-
-## b7境界
-
-初期snapshotの`test/fixtures/direction-lightning-v23.1.json`は旧permission contractのpredecessorです。
-`mcr.lightning`削除とhello時の独立した`mcr.online`／`mcr.offline`／build range snapshotを含むsuccessor fixtureは、現行ownerの
-scratch-editorから発行します。本repositoryから発行せず、consumer参照とb7 gateを切り替えません。
+これはsource importの記録です。各consumerの切り替えと横断gateの完了はknowledge coordinatorが記録します。
