@@ -1,0 +1,9 @@
+*
+!packages/
+!packages/bridge/
+!packages/bridge/package.json
+!packages/bridge/dist/
+!packages/bridge/dist/**
+!node_modules/
+!node_modules/ws/
+!node_modules/ws/**
