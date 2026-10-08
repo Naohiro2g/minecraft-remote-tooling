@@ -23,6 +23,7 @@ npm test
 | [Protocol](packages/protocol/README.md) | 通信の型・定数、共有fixtureとowner test                  |
 | [WireScope](packages/live/README.md)    | 共通の観察画面、library、adapter、専用fixture、ZIP生成器 |
 | [Bridge](packages/bridge/README.md)     | WebSocketとTCPの透明な中継、設定、testと専用fixture      |
+| [Release manifest](schemas/README.md)   | 公開成果物のschema、共有fixture、整合性検査のreference   |
 
 Scratch固有の観測データ生成・受け渡し・起動UIとVM／GUIは[Scratchリポジトリ](https://github.com/Naohiro2g/scratch-editor)にあります。
 ここにあるpackageはnpmへ公開しません。fixtureは固定Git commit、WireScopeはZIPとdetached manifestのdigestで取得します。
