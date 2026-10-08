@@ -7,6 +7,7 @@ import schema from '../../../schemas/release-manifest-v2.schema.json'
 
 interface Fixture {
   knowledge_contract: { commit: string; decision: string }
+  declaration_file_source: { commit: string; sha256: string; case_id: string }
   cases: {
     id: string
     manifest: { schema_version: number }
@@ -24,8 +25,13 @@ const validators = new Map([
 
 describe('release manifest shared owner fixture', () => {
   it('pins the approved metadata contract separately from wire protocol', () => {
-    expect(fixture.knowledge_contract.commit).toBe('6dbb9f1ee192c6c46d8dd58fdd91f8e6c3f46de5')
+    expect(fixture.knowledge_contract.commit).toBe('6a7020d5199a6aa957c5ce43904916f2166a6b95')
     expect(fixture.knowledge_contract.decision).toBe('2026-10-07-09')
+    expect(fixture.declaration_file_source.commit).toBe('bd1ce15d90dc14dc59b23441df8677bed021a897')
+    expect(fixture.declaration_file_source.sha256).toBe(
+      'a202a11a104767c289266f4baf7692d499ed15b717dd4d5a31eca48abc17ca26',
+    )
+    expect(fixture.cases.some((entry) => entry.id === fixture.declaration_file_source.case_id)).toBe(true)
     expect(new Set(fixture.cases.map((entry: { id: string }) => entry.id)).size).toBe(fixture.cases.length)
   })
 

@@ -63,16 +63,29 @@ export const checkManifestContents = (manifest, contents, jarDeclaration) => {
   if (!Object.hasOwn(contents, declaration.path)) return rejected('reference_content_missing', 'content')
   const declarationBytes = Buffer.from(contents[declaration.path])
   if (sha256(declarationBytes) !== declaration.sha256) return rejected('declaration_sha256_mismatch', 'content')
-  let versions
+  let targets
   try {
-    versions = JSON.parse(declarationBytes.toString('utf8'))
+    targets = JSON.parse(declarationBytes.toString('utf8'))
   } catch {
     return rejected('declaration_content_invalid', 'content')
   }
   if (
-    !Array.isArray(versions) ||
+    targets === null ||
+    typeof targets !== 'object' ||
+    Array.isArray(targets) ||
+    Object.keys(targets).length !== 3 ||
+    targets.schema !== 'mc-remote.minecraft-targets' ||
+    targets.schema_version !== 1 ||
+    !Array.isArray(targets.minecraft_versions) ||
+    targets.minecraft_versions.length === 0 ||
+    targets.minecraft_versions.some((version) => typeof version !== 'string' || version.length === 0) ||
+    new Set(targets.minecraft_versions).size !== targets.minecraft_versions.length
+  ) {
+    return rejected('declaration_content_invalid', 'content')
+  }
+  const versions = targets.minecraft_versions
+  if (
     versions.length !== declaration.minecraft_versions.length ||
-    new Set(versions).size !== versions.length ||
     versions.some((version) => !declaration.minecraft_versions.includes(version))
   ) {
     return rejected('declaration_versions_mismatch', 'content')
