@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { ChatPostResult } from '../src/index'
-import { Method, PROTOCOL_VERSION } from '../src/index'
+import { Method } from '../src/index'
 import fixture from './fixtures/chat-event-compat-v23.2.json'
 
 describe('b9 chat and event compatibility owner fixture', () => {
   it('pins the unchanged protocol and ratified contracts with unique case IDs', () => {
     expect(fixture.schema).toBe('mcremote.chat-event-compat.v23.2')
-    expect(fixture.protocol).toBe(PROTOCOL_VERSION)
+    expect(fixture.protocol).toBe('23.2.0')
     expect(fixture.knowledge_contract.commit).toBe('900f6f4b8027d265a62ba7f139d4f3b1bbe78100')
     expect(fixture.knowledge_contract.decisions).toEqual(['2026-10-03-01', '2026-10-03-02'])
     expect(fixture.chat_post.method).toBe(Method.chatPost)

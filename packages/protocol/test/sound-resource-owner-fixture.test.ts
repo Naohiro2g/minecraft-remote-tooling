@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { PlayBlockSoundParams, PlayBlockSoundResult, PlaySoundParams, PlaySoundResult } from '../src/index.ts'
-import { ERROR_REASON_CODE, ErrorCode, ErrorReason, Method, PROTOCOL_VERSION } from '../src/index.ts'
+import { ERROR_REASON_CODE, ErrorCode, ErrorReason, Method } from '../src/index.ts'
 import fixture from './fixtures/entity-particle-v23.2.json'
 
 describe('B8 sound and resource owner fixture', () => {
   it('pins the contract, method mirror, and stable errors', () => {
     expect(fixture.schema).toBe('mcremote.entity-particle.v23.2')
-    expect(fixture.protocol).toBe(PROTOCOL_VERSION)
+    expect(fixture.protocol).toBe('23.2.0')
     expect(fixture.methods.sound).toBe(Method.worldPlaySound)
     expect(fixture.methods.block_sound).toBe(Method.worldPlayBlockSound)
     expect(fixture.knowledge_contract.sections).toEqual(['5.0.2', '5.8.3'])

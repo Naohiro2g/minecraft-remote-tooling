@@ -12,7 +12,7 @@
 
 [`test/fixtures/`](test/fixtures/)には、複数の実装で同じ通信結果を確かめるための共通の検証例があります。新しい契約を追加する際は、knowledge の仕様、型と定数、検証例の対応を確認します。過去の通信版の検証例は履歴として残します。
 
-B8 のサウンドと resource ID 入力の検証例は [`entity-particle-v23.2.json`](test/fixtures/entity-particle-v23.2.json) にあります。サウンド2メソッドと、block・dimension・particle・entity・sound の無印／完全修飾／非正準形を収めています。
+protocol `23.2.1` の検証例は [`chat-event-compat-v23.2.1.json`](test/fixtures/chat-event-compat-v23.2.1.json) と [`entity-particle-v23.2.1.json`](test/fixtures/entity-particle-v23.2.1.json) です。API と wire の内容は `23.2.0` と同じです。`23.2.0` の検証例は履歴として残します。entity・particle 側にはサウンド2メソッドと、block・dimension・particle・entity・sound の無印／完全修飾／非正準形も収めています。
 
 リポジトリのルートから実行します。
 

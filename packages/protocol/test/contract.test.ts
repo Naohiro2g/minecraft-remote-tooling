@@ -49,7 +49,7 @@ import spawnFixture from './fixtures/spawn-v22.json'
 
 describe('protocol constants', () => {
   it('advertises the clean protocol semver without a channel suffix', () => {
-    expect(PROTOCOL_VERSION).toBe('23.2.0')
+    expect(PROTOCOL_VERSION).toBe('23.2.1')
   })
 
   it('pins the JSON-RPC envelope version', () => {

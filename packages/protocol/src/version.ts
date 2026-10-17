@@ -5,4 +5,4 @@
  * suffix (e.g. the `b8` of `2320.0.0b8`) is never put on the wire; compatibility
  * is negotiated on the major/minor of this value alone (versioning-design §8).
  */
-export const PROTOCOL_VERSION = '23.2.0'
+export const PROTOCOL_VERSION = '23.2.1'
