@@ -22,3 +22,9 @@ npm test --workspace=@mc-remote/protocol
 ```
 
 このパッケージは非公開の作業単位（workspace）で、単独の npm 公開物ではありません。
+
+## ライセンス
+
+[`test/fixtures/`](test/fixtures/) ディレクトリだけは [MIT License](test/fixtures/LICENSE) です。このディレクトリ以外の Protocol の実装・テストと、tooling のほかの部分は、ルートの [AGPL-3.0-only](../../LICENSE) のままです。
+
+`package.json` の `license` は、パッケージの実装に適用する `AGPL-3.0-only` を維持しています。共有fixtureをコピーして使う場合は、同ディレクトリの `LICENSE` も含めてください。

@@ -36,3 +36,7 @@ mainのCIは3 packageのbuildとtestを実行し、WireScope ZIP・detached mani
 workflow artifactは90日保持です。公開releaseでは、Scratchの収集workflowが固定した生成物を検証してRelease／OCI registryへ収容します。
 
 所有の変更と移管元の対応は[移管記録](MIGRATION_ja.md)、設計の正本は[knowledge](https://github.com/Naohiro2g/mc-remote-knowledge)にあります。
+
+## ライセンス
+
+このリポジトリは [AGPL-3.0-only](LICENSE) です。ただし、[Protocol の共有fixtureディレクトリ](packages/protocol/test/fixtures/)だけは [MIT License](packages/protocol/test/fixtures/LICENSE) を適用します。このディレクトリ以外のライセンスは AGPL-3.0-only のままです。
