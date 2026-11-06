@@ -14,6 +14,8 @@
 
 protocol `23.2.1` の検証例は [`chat-event-compat-v23.2.1.json`](test/fixtures/chat-event-compat-v23.2.1.json) と [`entity-particle-v23.2.1.json`](test/fixtures/entity-particle-v23.2.1.json) です。API と wire の内容は `23.2.0` と同じです。`23.2.0` の検証例は履歴として残します。entity・particle 側にはサウンド2メソッドと、block・dimension・particle・entity・sound の無印／完全修飾／非正準形も収めています。
 
+既存10本のmethod別カバレッジ、case数、現行／履歴の区別とF1の不足は、[E1の共有fixture一覧](FIXTURE_INVENTORY_ja.md)を参照してください。
+
 リポジトリのルートから実行します。
 
 ```sh
