@@ -663,11 +663,9 @@
             "id": 1,
             "error": {
               "code": -32000,
-              "message": "protocol mismatch",
+              "message": "Server protocol 23.2.1 cannot satisfy client protocol 24.0.0",
               "data": {
-                "reason": "protocol_mismatch",
-                "server_protocol": "23.2.1",
-                "client_protocol": "24.0.0"
+                "reason": "protocol_mismatch"
               }
             }
           }
@@ -681,7 +679,7 @@
         "pending_ids": []
       },
       "unresolved": [
-        "不一致reasonと双方の版情報は契約。data内の版field名・message文言・-32000番台のexact番号・切断時機はこのpeerの例示であり新しい必須値ではない。"
+        "双方の版情報はこの例のmessage内に示す。専用data field名は未確定で追加しない。messageの正準文言・server定義codeのexact番号・切断時機も新しく固定しない。"
       ]
     }
   ]

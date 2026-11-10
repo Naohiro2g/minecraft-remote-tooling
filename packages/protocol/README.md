@@ -57,7 +57,7 @@ versioningの互換判定、`reason`は失敗分類です。`pending_ids`は応�
 
 peerのtoken、session ID、UUID、registry、応答の英語messageはfixture用の架空値です。
 server定義域のerror codeはその範囲内から選んだ代表例で、特定の整数を追加批准するものではありません。
-`protocol_mismatch`の追加data field名も、このpeerで両方の版を知らせるための例です。
+`protocol_mismatch`の例はmessageに両方の版を示し、未確定の専用data field名を追加しません。
 JSON objectのmember順はwireの意味に含めず、BlockValue出力は完全修飾IDとfull stateを比較します。
 既存のblock-value fixtureの数値・正準化・既定stateを再利用し、実Minecraftに架空modがあるとは主張しません。
 
