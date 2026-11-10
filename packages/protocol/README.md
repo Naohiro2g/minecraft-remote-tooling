@@ -44,7 +44,16 @@ framing、hello、pairing、blocks、errors、close の6本を、
 
 `message`はJSON値です。TCP経路ではcompact JSONをUTF-8にしてLFで終端します。browser経路では1 WS messageを
 1 JSONとして扱い、TCP用のbyte chunkをそのままWS境界へ読み替えません。framingのcaseの`expected.frames`は
-受け取った完全なJSON値、`tail_hex`はまだLFが届いていない末尾です。`matched_ids`／`ignored_ids`は応答の相関結果です。
+受け取った完全なJSON値、`tail_hex`はまだLFが届いていない末尾です。
+
+`matched_ids`は、そのcaseで検査対象にしたrequestに対応付けた応答idを、対応付けた順に列挙する期待値です。
+前準備を含む対話全体で照合した応答idの総一覧ではありません。
+
+- F1-ER-01〜03は、エラー応答の対応付けが検査対象なので`[2]`です。helloのid 1は前準備であり、この列には含めません。
+- F1-FR-07は、応答の相関処理そのものが検査対象なので、対応付けた全idを受信順の`[2, 1]`で示します。
+  未知id 99は対応付けずに破棄するため、`ignored_ids`が`[99]`です。
+
+列に含めない前準備の応答も、clientは通常どおり処理します。ER-01〜03のhelloを無視してよいという意味ではありません。
 
 ほかの`expected`は、そのcaseで比較する観測を持ちます。`result`／`error`はdecode後の値、`compatible`は
 versioningの互換判定、`reason`は失敗分類です。`pending_ids`は応答をまだ待つid、`unanswered_ids`は
