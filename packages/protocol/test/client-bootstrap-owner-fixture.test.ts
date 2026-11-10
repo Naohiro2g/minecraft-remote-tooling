@@ -55,6 +55,13 @@ describe('F1 client bootstrap fixture data', () => {
 
     for (const entry of fixture.cases) {
       it(`${entry.id}: resolves case and value references`, () => {
+        const responseIds = entry.steps.filter((step) => step.op === 'peer_send').map((step) => step.message?.id)
+        for (const field of ['completed_ids', 'matched_ids']) {
+          const summary = entry.expected[field]
+          if (Array.isArray(summary)) {
+            for (const id of summary as unknown[]) expect(responseIds).toContain(id)
+          }
+        }
         for (const reference of entry.related_cases ?? []) {
           expect(ids, `${entry.id}: ${reference}`).toContain(reference)
         }

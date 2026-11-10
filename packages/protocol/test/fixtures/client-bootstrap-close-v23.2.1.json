@@ -258,7 +258,7 @@
       "expected": {
         "connection": "closed",
         "unanswered_ids": [2],
-        "completed_ids": []
+        "completed_ids": [1]
       },
       "unresolved": [
         "EOF時の末尾破棄／error分類とpendingの例外型・timeout・完了方法は契約で一意でない。部分行を成功応答としない観測だけを固定。"
