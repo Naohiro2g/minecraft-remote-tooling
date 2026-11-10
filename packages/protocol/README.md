@@ -57,7 +57,10 @@ versioningの互換判定、`reason`は失敗分類です。`pending_ids`は応�
 
 peerのtoken、session ID、UUID、registry、応答の英語messageはfixture用の架空値です。
 server定義域のerror codeはその範囲内から選んだ代表例で、特定の整数を追加批准するものではありません。
-`protocol_mismatch`の例はmessageに両方の版を示し、未確定の専用data field名を追加しません。
+`protocol_mismatch`は`data.reason`、`data.server`、`data.client_requires`を返します。版の値は文字列です。
+clientはcodeによらず`data.reason`で判定します。F1-HE-09はserver定義域の代表値`-32000`、
+F1-HE-10はMcRemote `2321.1.0`までの`-32600`を受ける移行対応の例です。後者を契約上のcodeとして採用しません。
+決定はknowledge `2026-11-10-01`（wire §7.3）。message文言・範囲内のexact code・切断時機は、このfixtureで新しく固定しません。
 JSON objectのmember順はwireの意味に含めず、BlockValue出力は完全修飾IDとfull stateを比較します。
 既存のblock-value fixtureの数値・正準化・既定stateを再利用し、実Minecraftに架空modがあるとは主張しません。
 

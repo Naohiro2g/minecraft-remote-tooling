@@ -47,10 +47,31 @@ describe('F1 client bootstrap fixture data', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
+  it('uses the ratified mismatch fields with both current and transitional error codes', () => {
+    const current = fixtures[1].cases.find((entry) => entry.id === 'F1-HE-09')
+    const transitional = fixtures[1].cases.find((entry) => entry.id === 'F1-HE-10')
+    if (!current || !transitional) throw new Error('missing current or transitional protocol_mismatch case')
+    const currentError = messageAt(current, 2).error as Record<string, unknown>
+    const transitionalError = messageAt(transitional, 2).error as Record<string, unknown>
+    expect(currentError).toMatchObject({
+      code: -32000,
+      data: { reason: 'protocol_mismatch', server: '23.2.1', client_requires: '24.0.0' },
+    })
+    expect(transitionalError).toEqual({ ...currentError, code: -32600 })
+    expect(transitional.expected).toEqual(current.expected)
+    expect(transitional.expected.reason).toBe('protocol_mismatch')
+    expect(transitional.steps.slice(0, 2)).toEqual(current.steps.slice(0, 2))
+    expect(transitional.steps.slice(3)).toEqual(current.steps.slice(3))
+  })
+
   for (const fixture of fixtures) {
     it(`${fixture.suite}: matches the data schema and approved source`, () => {
       expect(validate(fixture), JSON.stringify(validate.errors)).toBe(true)
-      expect(fixture.knowledge_contract.commit).toBe('308a2a441060265e10af3d5e8e97c826c86b4ed8')
+      expect(fixture.knowledge_contract.commit).toBe(
+        fixture.suite === 'hello'
+          ? '5e00768911feb7be1e54ae3b7e9c2d776b88927a'
+          : '308a2a441060265e10af3d5e8e97c826c86b4ed8',
+      )
     })
 
     for (const entry of fixture.cases) {
