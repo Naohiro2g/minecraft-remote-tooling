@@ -64,13 +64,61 @@ describe('F1 client bootstrap fixture data', () => {
     expect(transitional.steps.slice(3)).toEqual(current.steps.slice(3))
   })
 
+  it('settles pending close requests as local completion-unknown failures', () => {
+    for (const id of ['F1-CL-03', 'F1-CL-05']) {
+      const entry = fixtures[5].cases.find((candidate) => candidate.id === id)
+      if (!entry) throw new Error(`missing close case ${id}`)
+      expect(entry.expected).toMatchObject({
+        connection: 'closed',
+        unanswered_ids: [2],
+        pending_ids: [],
+        local_failures: [{ id: 2, outcome: 'completion_unknown' }],
+      })
+      expect(entry.expected).not.toHaveProperty('error')
+      expect(entry.expected).not.toHaveProperty('reason')
+    }
+  })
+
+  it('returns to tokenless hello before pairing and stops after one pairing attempt', () => {
+    for (const id of ['F1-AU-08', 'F1-AU-09', 'F1-AU-10']) {
+      const entry = fixtures[2].cases.find((candidate) => candidate.id === id)
+      if (!entry) throw new Error(`missing credential recovery case ${id}`)
+      const sends = entry.steps.filter((step) => step.op === 'client_send').map((step) => step.message)
+      expect(sends[0]).toMatchObject({ method: 'hello', params: { auth: { token: 'mcrs_fixture_expired' } } })
+      expect(sends[1]).toMatchObject({ method: 'hello' })
+      expect(sends[1]?.params).not.toHaveProperty('auth')
+      const begins = sends.filter((message) => message?.method === 'auth.pairBegin')
+      expect(begins).toHaveLength(id === 'F1-AU-09' ? 0 : 1)
+      expect(entry.expected.pairing_attempts).toBe(begins.length)
+      if (id === 'F1-AU-10') {
+        expect(sends.at(-1)).toMatchObject({ method: 'hello' })
+        expect(entry.expected).toMatchObject({ reason: 'token_revoked', discard_token: true })
+      } else {
+        expect(entry.expected).toHaveProperty('result')
+      }
+    }
+  })
+
+  it('keeps local failure outcomes separate from server errors and reasons', () => {
+    const valid = copyFixture(fixtures[5])
+    valid.cases[0].expected = { local_failures: [{ id: 2, outcome: 'completion_unknown' }] }
+    expect(validate(valid), JSON.stringify(validate.errors)).toBe(true)
+    for (const extra of [{ reason: 'connection_closed' }, { code: -32000 }, { outcome: 'success' }]) {
+      const invalid = copyFixture(valid)
+      invalid.cases[0].expected.local_failures = [{ id: 2, outcome: 'completion_unknown', ...extra }]
+      expect(validate(invalid)).toBe(false)
+    }
+  })
+
   for (const fixture of fixtures) {
     it(`${fixture.suite}: matches the data schema and approved source`, () => {
       expect(validate(fixture), JSON.stringify(validate.errors)).toBe(true)
       expect(fixture.knowledge_contract.commit).toBe(
-        fixture.suite === 'hello'
-          ? '5e00768911feb7be1e54ae3b7e9c2d776b88927a'
-          : '308a2a441060265e10af3d5e8e97c826c86b4ed8',
+        fixture.suite === 'pairing' || fixture.suite === 'close'
+          ? '562b5c008c7a4e391f04a79ed4496bbd44670896'
+          : fixture.suite === 'hello'
+            ? '5e00768911feb7be1e54ae3b7e9c2d776b88927a'
+            : '308a2a441060265e10af3d5e8e97c826c86b4ed8',
       )
     })
 
