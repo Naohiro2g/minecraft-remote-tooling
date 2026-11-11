@@ -112,9 +112,17 @@ client側の失敗という期待値で、serverのerrorや言語固有の例外
 CL-07は完全なJSONでもLFなしでEOFになれば応答にせず、CL-08は自分で閉じたときの複数pending回収を検査します。
 
 既存48caseは内容を保ち、4caseを追加しました。HE-04／05を読むconsumerの期待値を変えないため、新IDへ分けています。
-socket errorは既存opに無いため、application操作などとともに次の形式拡張で扱います。
+socket error時の回収は、v2のOP-01で検査します。
 新しいcaseの根拠はknowledge `076a127a22eaf0188c1d13822bfd55bfeee9ec38`の
 `00-hub/polyglot-f1-e2-ops-fixture-instructions_ja.md`とwire §3.4／§6.2です。
+
+### F1 v2：待機とapplication操作
+
+[`client-bootstrap-operations-v23.2.1.json`](test/fixtures/client-bootstrap-operations-v23.2.1.json)の12caseは、
+application呼び出し、仮想時計、notification、接続別の期待値を使います。v1の52caseとschemaは維持し、新しい形式を
+[`client-bootstrap-v2.schema.json`](test/fixtures/client-bootstrap-v2.schema.json)へ分けました。
+既存のglobですべてをv1として読むconsumerは、`schema`で分岐するかfile一覧を固定する必要があります。
+操作の入力と観測、時計の結び方、期待値、caseの対応と残る境界は[形式の説明](CLIENT_BOOTSTRAP_V2_ja.md)を参照してください。
 
 toolingのowner testはJSONの形、case IDの重複、case／値の参照を検査します。transportの共通runnerや
 client実装は配りません。各clientの送受信・実serverとのpulseの合格は別のF3で確認します。
