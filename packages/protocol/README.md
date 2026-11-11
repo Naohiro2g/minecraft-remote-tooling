@@ -103,6 +103,19 @@ JSON objectのmember順はwireの意味に含めず、BlockValue出力は完全�
 まだ追加していないcaseと、現在の`steps`／`expected`で足りない観測は、
 [F1 E2の追加案](F1_E2_PROPOSALS_ja.md)へ分けています。新しいwireやtimeoutの値を提案として固定しません。
 
+### E2のclose追加（2026-11-12）
+
+決定2026-11-12-01に合わせ、HE-11／HE-12では互換でないhello resultを受けたclientが、次のrequestを送らずに閉じ、
+applicationへ失敗を返します。`application_failure: { source: "client", kind: "incompatible_protocol" }`は
+client側の失敗という期待値で、serverのerrorや言語固有の例外名ではありません。
+この2caseの`client_close`は自発closeを観測します。harnessがcloseを強制して合格にしないでください。
+CL-07は完全なJSONでもLFなしでEOFになれば応答にせず、CL-08は自分で閉じたときの複数pending回収を検査します。
+
+既存48caseは内容を保ち、4caseを追加しました。HE-04／05を読むconsumerの期待値を変えないため、新IDへ分けています。
+socket errorは既存opに無いため、application操作などとともに次の形式拡張で扱います。
+新しいcaseの根拠はknowledge `076a127a22eaf0188c1d13822bfd55bfeee9ec38`の
+`00-hub/polyglot-f1-e2-ops-fixture-instructions_ja.md`とwire §3.4／§6.2です。
+
 toolingのowner testはJSONの形、case IDの重複、case／値の参照を検査します。transportの共通runnerや
 client実装は配りません。各clientの送受信・実serverとのpulseの合格は別のF3で確認します。
 

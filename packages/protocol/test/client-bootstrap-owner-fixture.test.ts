@@ -110,14 +110,55 @@ describe('F1 client bootstrap fixture data', () => {
     }
   })
 
+  it('observes client rejection and close before any post-hello request', () => {
+    for (const id of ['F1-HE-11', 'F1-HE-12']) {
+      const entry = fixtures[1].cases.find((candidate) => candidate.id === id)
+      if (!entry) throw new Error(`missing incompatible close case ${id}`)
+      expect(entry.steps.filter((step) => step.op === 'client_send')).toHaveLength(1)
+      expect(entry.steps.at(-1)?.op).toBe('client_close')
+      expect(entry.expected).toMatchObject({
+        compatible: false,
+        connection: 'closed',
+        application_failure: { kind: 'incompatible_protocol', source: 'client' },
+      })
+      expect(entry.expected).not.toHaveProperty('error')
+    }
+  })
+
+  it('discards a complete JSON tail without LF and settles every pending request on local close', () => {
+    const eof = fixtures[5].cases.find((entry) => entry.id === 'F1-CL-07')
+    const local = fixtures[5].cases.find((entry) => entry.id === 'F1-CL-08')
+    if (!eof || !local) throw new Error('missing EOF or local close case')
+    const hex = eof.steps.find((step) => step.op === 'peer_bytes')?.bytes_hex
+    if (!hex) throw new Error('missing complete JSON tail')
+    const bytes = hex.match(/../g)
+    if (!bytes) throw new Error('missing JSON tail bytes')
+    const text = String.fromCharCode(...bytes.map((byte) => Number.parseInt(byte, 16)))
+    expect(() => JSON.parse(text) as unknown).not.toThrow()
+    expect(text.endsWith('\n')).toBe(false)
+    expect(eof.expected).toMatchObject({
+      completed_ids: [1],
+      pending_ids: [],
+      local_failures: [{ id: 2, outcome: 'completion_unknown' }],
+    })
+    expect(local.steps.at(-1)?.op).toBe('client_close')
+    expect(local.expected).toMatchObject({
+      pending_ids: [],
+      local_failures: [
+        { id: 2, outcome: 'completion_unknown' },
+        { id: 3, outcome: 'completion_unknown' },
+      ],
+    })
+  })
+
   for (const fixture of fixtures) {
     it(`${fixture.suite}: matches the data schema and approved source`, () => {
       expect(validate(fixture), JSON.stringify(validate.errors)).toBe(true)
       expect(fixture.knowledge_contract.commit).toBe(
-        fixture.suite === 'pairing' || fixture.suite === 'close'
-          ? '562b5c008c7a4e391f04a79ed4496bbd44670896'
-          : fixture.suite === 'hello'
-            ? '5e00768911feb7be1e54ae3b7e9c2d776b88927a'
+        fixture.suite === 'hello' || fixture.suite === 'close'
+          ? '076a127a22eaf0188c1d13822bfd55bfeee9ec38'
+          : fixture.suite === 'pairing'
+            ? '562b5c008c7a4e391f04a79ed4496bbd44670896'
             : '308a2a441060265e10af3d5e8e97c826c86b4ed8',
       )
     })
