@@ -100,7 +100,10 @@ describe('F1 operation fixture data', () => {
 
   it('rejects fabricated server errors and reasons on local outcomes', () => {
     for (const index of [0, 4, 7]) {
-      for (const extra of [{ error: { code: -32000 } }, { reason: 'fixture_reason' }]) {
+      for (const extra of [
+        { error: { code: -32000, message: 'fixture error', data: { reason: 'fixture_reason' } } },
+        { reason: 'fixture_reason' },
+      ]) {
         const data = clone()
         expect(validate(data), JSON.stringify(validate.errors)).toBe(true)
         const result = data.cases[index].expected.calls?.[0]
