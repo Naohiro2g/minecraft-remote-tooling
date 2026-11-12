@@ -4,13 +4,13 @@
 形式は`mcremote.client-bootstrap.v2`、検査用schemaは`test/fixtures/client-bootstrap-v2.schema.json`です。
 wireの版は既存と同じ`23.2.1`です。新しいmethod、reason、clientの例外型や公開APIを定めません。
 
-根拠はknowledge `076a127a22eaf0188c1d13822bfd55bfeee9ec38`の
-[依頼票](https://github.com/Naohiro2g/mc-remote-knowledge/blob/076a127a22eaf0188c1d13822bfd55bfeee9ec38/00-hub/polyglot-f1-e2-ops-fixture-instructions_ja.md)、
+根拠はknowledge `cd2ba766576215924ef2e8182b100c6be8c78aaf`の
+[依頼票](https://github.com/Naohiro2g/mc-remote-knowledge/blob/cd2ba766576215924ef2e8182b100c6be8c78aaf/00-hub/polyglot-f1-e2-ops-fixture-instructions_ja.md)、
 DECISIONS `2026-11-11-01`／`2026-11-12-01`と、wire §3.4／§3.5／§6.2／§6.5です。
 
 ## v1との境界
 
-既存6fileの52caseとv1 schemaは、そのまま残します。v2を別fileへ分けたのは、application操作、request idをまだ持たない結果、
+v1の6fileの54caseとv1 schemaは、そのまま残します。v2を別fileへ分けたのは、application操作、request idをまだ持たない結果、
 時計、notification、接続別の観測を、既存のwire対話と違う方法でconsumerが処理する必要があるためです。
 
 既存fileを明示して読むconsumerは継続できます。`client-bootstrap-*-v23.2.1.json`をglobして全部v1として読むconsumerは、
@@ -64,19 +64,27 @@ helloやnotificationも含めます。`observe`までの処理を進めても、
 
 ## expectedの欄
 
-rootの`expected`は最後の観測、`observe.expected`はその途中の観測です。記載した行だけを比較します。例えばOP-08は終了後に
-socketを閉じるかを決めないため、connectionの`state`を省き、送信数とpendingだけを比較します。
+rootの`expected`は最後の観測、`observe.expected`はその途中の観測です。TypeScriptの読み方と同じく、記載した行と欄だけを
+比較します。OP-04／06に書いていない`session_changed`が実際に通知されても失敗ではなく、この2caseは変更しません。
 
-| 欄                 | 比較すること                                                                                                                                               |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `calls`            | `call`に対応するapplication操作の結果。`pending`、FASTの`queued`、`success`、`completion_unknown`、`not_sent`、`server_error`、`pairing_expired`を区別する |
-| `connections`      | 接続ごとの状態、実際に送ったJSON-RPC数、未解決のwire request id。応答待ちの回収後は`pending_ids: []`                                                       |
-| `connect_attempts` | このcaseで観測した接続開始数。初回接続も含む。OP-05のpolicy内部のretry回数は対象外                                                                         |
-| `events`           | applicationへ知らせた意味。再接続、event loss、server／sessionの変更。言語固有のイベント名は要求しない                                                     |
-| `flushes`          | flushを行った接続と、保証に含めてはいけない旧接続。前のflush後に再接続したことも利用者に分かるようにする                                                   |
-| `negotiations`     | 接続ごとのclient側互換判定。成功形のhello resultでも再検査する                                                                                             |
-| `epoch_states`     | 旧接続のhandleとcursorが使えなくなったこと。内部の削除方式やAPIの名前は固定しない                                                                          |
-| `catalogs`         | 新しいhelloのhashと保持cacheのhashを照合し直した結果。不一致の古いcacheを適合と見なさない。実catalog本体の取得や正準化の検査とは別                         |
+schemaが省略を許す欄を省略した場合、その欄を比較しません。schemaの必須欄を省いてよいという意味ではありません。
+行の対応を付けた後、行に書いたscalarは型を含めて一致を要求し、書いていない欄は無視します。
+比較対象の欄が実観測に無い場合は不一致です。JSON objectのmember順は比較しません。
+
+| 欄                 | 行の対応                                                                                     | 書いていない行・欄                           | 行や配列の順と値の比較                                                                                                                                                                                          |
+| ------------------ | -------------------------------------------------------------------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `calls`            | `call`をkeyに、その観測時点の結果へ対応させる。過去のpending履歴で現在の結果を代用しない     | 余分なcallは許す。行の省略可能な欄は比べない | 行順は不問。書いたoutcome／source／connection／cause／equivalent_toを一致させる。`error`を指定したときはwireのerror JSON値を完全比較し、code・message・opaqueなdataを保つ。言語の例外全体を比較する意味ではない |
+| `connections`      | `connection`をkeyに対応させる                                                                | 余分な接続は許す。省略した`state`は比べない  | 行順は不問。sent_countはhello／notificationを含む実送信数と完全一致。pending_idsは順序を問わない集合として完全一致し、余分なpendingも許さない                                                                   |
+| `connect_attempts` | 配列ではなくcase全体のscalar                                                                 | 欄が無ければ比べない                         | 数値を完全一致。初回も含む。OP-05のpolicy内部のretry回数は対象外                                                                                                                                                |
+| `events`           | 書いた各行の全fieldが一致する実通知が含まれるかを見る。期待する各行に別の通知1件を対応させる | 余分な通知と、実通知の余分なfieldは許す      | 行順は不問。配列全体の一致を要求せず、同じ通知を複数の期待行へ重ねて使わない                                                                                                                                    |
+| `flushes`          | `call`と`connection`の組で対応させる                                                         | 余分なflushは許す。省略可能な欄は比べない    | 行順は不問。excluded_connectionsの各接続が保証から除かれていることを確認し、順序と追加の除外接続は問わない。reconnected_since_previous_flushは書いたbooleanに一致させる                                         |
+| `negotiations`     | `connection`で対応させる                                                                     | 余分な接続の判定は許す                       | 行順は不問。書いたcompatibleを一致させる                                                                                                                                                                        |
+| `epoch_states`     | `connection`で対応させる                                                                     | 余分な接続の状態は許す                       | 行順は不問。invalidated_handles／invalidated_cursorsは記載したものが全て失効していることを確認し、順序と追加の失効値は問わない                                                                                  |
+| `catalogs`         | `connection`と`cached_hash`の組で対応させる                                                  | 余分なcache照合は許す                        | 行順は不問。書いたhello_hash／cached_hash／cache_matchesを一致させ、別のcacheの一致で代用しない                                                                                                                 |
+
+例えばOP-08ではc1はpeerのEOFでclosedであることを比較します。一方、pairingに使うc2を期限切れの後に閉じるかは要求しないので、
+c2の`state`を省き、送信数とpendingだけを比較します。auth_required後に同じTCPでpairingする形もwireでは許されますが、
+このcaseはAU-01／02にそろえて別のTCPを使い、client自身の期限切れ判断だけに焦点を合わせています。
 
 `calls.source`は判断元です。`completion_unknown`／`not_sent`／`pairing_expired`はclientで判断した失敗で、serverの`error`や
 `reason`を付けません。`not_sent.cause`はfixtureが未送信の原因を分類するmetadataです。wire reasonや言語の例外名ではありません。
