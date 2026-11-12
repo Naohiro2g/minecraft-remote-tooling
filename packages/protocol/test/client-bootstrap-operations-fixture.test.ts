@@ -31,6 +31,7 @@ const clone = (): typeof fixture => JSON.parse(JSON.stringify(fixture)) as typeo
 describe('F1 operation fixture data', () => {
   it('validates a distinct v2 format with twelve unique cases', () => {
     expect(validate(operations), JSON.stringify(validate.errors)).toBe(true)
+    expect(operations.knowledge_contract.commit).toBe('cd2ba766576215924ef2e8182b100c6be8c78aaf')
     const ids = fixture.cases.map((entry) => entry.id)
     expect(new Set(ids).size).toBe(12)
     expect(ids).toEqual(Array.from({ length: 12 }, (_, index) => `F1-OP-${String(index + 1).padStart(2, '0')}`))
@@ -88,6 +89,25 @@ describe('F1 operation fixture data', () => {
       check(entry.expected)
     })
   }
+
+  it('observes auth-required EOF before pairing on a separate connection', () => {
+    const entry = fixture.cases[7]
+    expect(entry.id).toBe('F1-OP-08')
+    const eof = entry.steps.findIndex((step) => step.op === 'peer_eof')
+    expect(eof).toBe(4)
+    expect(entry.steps[eof].connection).toBe('c1')
+    expect(entry.steps[eof + 1]).toMatchObject({ op: 'expect_connect', connection: 'c2' })
+    const pairingSends = entry.steps.filter((step) => step.op === 'expect_send' && step.message?.method !== 'hello')
+    expect(pairingSends.map((step) => [step.connection, step.message?.id])).toEqual([
+      ['c2', 1],
+      ['c2', 2],
+    ])
+    expect(entry.steps.at(-1)).toMatchObject({ op: 'advance_clock', timer: 'pairing_ttl', connection: 'c2' })
+    expect(entry.expected.connections).toEqual([
+      { connection: 'c1', state: 'closed', sent_count: 1, pending_ids: [] },
+      { connection: 'c2', sent_count: 2, pending_ids: [] },
+    ])
+  })
 
   it('allows FAST notifications but rejects responses disguised as notifications', () => {
     const data = clone()

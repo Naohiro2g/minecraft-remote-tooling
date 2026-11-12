@@ -103,6 +103,19 @@ JSON objectのmember順はwireの意味に含めず、BlockValue出力は完全�
 まだ追加していないcaseと、現在の`steps`／`expected`で足りない観測は、
 [F1 E2の追加案](F1_E2_PROPOSALS_ja.md)へ分けています。新しいwireやtimeoutの値を提案として固定しません。
 
+### AU-07／AU-12の観測の終わり
+
+AU-07は無効tokenの破棄とc1のEOFまでを検査します。接続試行全体の終了を要求するcaseではありません。
+EOFを渡し、その結果のtoken破棄を確認した時点で観測を閉じます。その後clientが次の接続を始めても、caseに無い送信として
+失敗にしません。後続のtokenなしhelloはAU-08／09／10で検査します。
+runnerはこの境界のsnapshotを比べた後にtaskとtransportを片付け、後続helloへの応答が無いままbootstrap全体の完了を
+待ち続けないでください。caseを終えるために架空のauth応答を足したり、その後のpairingまでPASSと数えたりもしません。
+
+AU-11は、pending応答後のEOFを越えて同じpairingのpollを新しいTCPで続け、承認とtoken付きhelloまでを検査します。
+一接続試行で二度目のpairBeginを送りません。AU-12はpollの応答前にEOFとなり、そのrequestを完了不明にするところまでです。
+AU-12のrunnerも対象pollのlocalな失敗を確認したところで観測を閉じます。後続の自動継続方針やbootstrap全体の成否は要求しません。
+この2caseは既存opで表せるためv1のpairing fileに追加しました。v1は54case、v2は12caseです。
+
 ### E2のclose追加（2026-11-12）
 
 決定2026-11-12-01に合わせ、HE-11／HE-12では互換でないhello resultを受けたclientが、次のrequestを送らずに閉じ、
@@ -119,7 +132,7 @@ socket error時の回収は、v2のOP-01で検査します。
 ### F1 v2：待機とapplication操作
 
 [`client-bootstrap-operations-v23.2.1.json`](test/fixtures/client-bootstrap-operations-v23.2.1.json)の12caseは、
-application呼び出し、仮想時計、notification、接続別の期待値を使います。v1の52caseとschemaは維持し、新しい形式を
+application呼び出し、仮想時計、notification、接続別の期待値を使います。v1の54caseとschemaは維持し、新しい形式を
 [`client-bootstrap-v2.schema.json`](test/fixtures/client-bootstrap-v2.schema.json)へ分けました。
 既存のglobですべてをv1として読むconsumerは、`schema`で分岐するかfile一覧を固定する必要があります。
 操作の入力と観測、時計の結び方、期待値、caseの対応と残る境界は[形式の説明](CLIENT_BOOTSTRAP_V2_ja.md)を参照してください。

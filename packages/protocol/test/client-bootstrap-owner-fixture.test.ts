@@ -151,6 +151,39 @@ describe('F1 client bootstrap fixture data', () => {
     })
   })
 
+  it('continues pending pairing on a new TCP without beginning a second pairing', () => {
+    const entry = fixtures[2].cases.find((candidate) => candidate.id === 'F1-AU-11')
+    if (!entry) throw new Error('missing pairing EOF continuation case')
+    const sends = entry.steps.filter((step) => step.op === 'client_send').map((step) => step.message)
+    expect(sends.filter((message) => message?.method === 'auth.pairBegin')).toHaveLength(1)
+    const polls = sends.filter((message) => message?.method === 'auth.pairPoll')
+    expect(polls).toHaveLength(3)
+    for (const poll of polls) expect(poll?.params).toEqual({ pairing_id: 'fixture-pairing' })
+    expect(entry.steps.slice(9, 12)).toMatchObject([
+      { op: 'peer_eof' },
+      { op: 'connect', connection: 'c3' },
+      { op: 'client_send', message: { id: 1, method: 'auth.pairPoll' } },
+    ])
+    expect(entry.expected.pairing_attempts).toBe(1)
+    expect(entry.expected).toHaveProperty('token')
+    expect(entry.expected).toHaveProperty('result')
+  })
+
+  it('ends an unanswered pairing poll as a local completion-unknown failure', () => {
+    const entry = fixtures[2].cases.find((candidate) => candidate.id === 'F1-AU-12')
+    if (!entry) throw new Error('missing unanswered pairing poll case')
+    expect(entry.steps.at(-2)).toMatchObject({ op: 'client_send', message: { id: 3, method: 'auth.pairPoll' } })
+    expect(entry.steps.at(-1)?.op).toBe('peer_eof')
+    expect(entry.expected).toMatchObject({
+      pending_ids: [],
+      unanswered_ids: [3],
+      local_failures: [{ id: 3, outcome: 'completion_unknown' }],
+      pairing_attempts: 1,
+    })
+    expect(entry.expected).not.toHaveProperty('error')
+    expect(entry.expected).not.toHaveProperty('reason')
+  })
+
   for (const fixture of fixtures) {
     it(`${fixture.suite}: matches the data schema and approved source`, () => {
       expect(validate(fixture), JSON.stringify(validate.errors)).toBe(true)
@@ -158,7 +191,7 @@ describe('F1 client bootstrap fixture data', () => {
         fixture.suite === 'hello' || fixture.suite === 'close'
           ? '076a127a22eaf0188c1d13822bfd55bfeee9ec38'
           : fixture.suite === 'pairing'
-            ? '562b5c008c7a4e391f04a79ed4496bbd44670896'
+            ? 'cd2ba766576215924ef2e8182b100c6be8c78aaf'
             : '308a2a441060265e10af3d5e8e97c826c86b4ed8',
       )
     })
