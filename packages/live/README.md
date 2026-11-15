@@ -38,3 +38,13 @@ npm run build:artifact --workspace=@mc-remote/live -- --source-commit <40桁の�
 結果は `dist/artifacts/wirescope-app.zip` と `dist/artifacts/wirescope-app.manifest.json` です。受け渡す際は、この二つのファイルを組として扱います。公開や配備の手順は[リリースの設計資料](https://github.com/Naohiro2g/mc-remote-knowledge)を確認してください。
 
 観察画面へ渡す情報は許可した項目だけに絞ります。認証情報やプレイヤーの識別情報は表示用データへ含めず、観察を許す情報もブラウザの永続保存には書き込みません。
+
+### 接続先実装とエラーの追加情報
+
+観測用helloには、相手が返した場合だけ`server: {name, version}`を含めます。
+WireScopeは実装名と版を表示し、省略された相手の種類をhost名などから推測しません。
+
+エラーの`data`は、`bounds`の高さ・世界の外周・建築範囲、`violating`の世界の絶対座標、
+`limit`と`requested`を保持します。`bounds`と`violating`はwire §7.3のobjectを受け、
+既存の観測データの数値配列も読みます。定義外のfieldは受け付けません。
+これは観測用データの追加で、JSON-RPCのmethodや共有fixtureを変更しません。
