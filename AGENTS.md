@@ -46,6 +46,7 @@ SSOT repositoryへアクセスできない場合は作業を止め、その旨�
 - 公開Release manifestのschemaと共有fixtureはrootの`schemas/`です。wire Protocolとは別の契約で、
   consumerはBridge／WireScopeのlockと分けて固定します。owner testは`packages/protocol/test/`にあり、
   schema検査用のAjvはdev dependencyだけです。`schemas/README.md`の読み方と出典を参照してください。
+- 接続先一覧の契約案は`schemas/connection-targets-v1.schema.json`です。Bridgeは`BRIDGE_TARGETS_FILE`で生成済み一覧を読みます。wireやRelease manifestと混同しません。
 - Scratch固有source、GUI／VM、McRemote handler、Python／Java Client APIは本repositoryへ移しません。
 - npm publish、sharedへのdeploy、Git tag／Release公開は明示された指示でのみ行います。
 - candidateはCIのworkflow artifactで返します。release用のWireScope ZIPとdetached manifestは対で扱います。

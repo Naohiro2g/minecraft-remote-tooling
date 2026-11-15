@@ -25,6 +25,11 @@ export interface SandboxTarget {
  * @returns The TCP target, or `null` if the requested Sandbox is not allowed.
  */
 export function resolveSandbox(requested: string | undefined, config: BridgeConfig): SandboxTarget | null {
+  if (config.connectionTargets) {
+    const id = requested ?? config.connectionTargets.default_target_id
+    const target = config.connectionTargets.targets.find((candidate) => candidate.id === id)
+    return target ? { host: target.host, port: target.port } : null
+  }
   const sandbox = requested ?? config.defaultSandbox
   if (!config.sandboxAllowlist.includes(sandbox)) return null
   return { host: sandbox, port: config.sandboxPort }
