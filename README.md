@@ -40,3 +40,15 @@ workflow artifactは90日保持です。公開releaseでは、Scratchの収集wo
 ## ライセンス
 
 このリポジトリは [AGPL-3.0-only](LICENSE) です。ただし、[Protocol の共有fixtureディレクトリ](packages/protocol/test/fixtures/)だけは [MIT License](packages/protocol/test/fixtures/LICENSE) を適用します。このディレクトリ以外のライセンスは AGPL-3.0-only のままです。
+
+## リリース候補の生成
+
+CIの`workflow_dispatch`に`release_version`（例：`v2321.2.0`）を渡すと、
+そのrefからBridge OCIとWireScopeのZIP・manifestをActions artifactへ収容します。
+BridgeのOCI versionラベルには指定した版、revisionには実際のsource commitを入れます。
+通常のpush／PR CIは`sha-<commit>`のラベルを使います。
+候補の生成ではGit tag・GitHub Release・registryへの公開はしません。
+
+```sh
+gh workflow run ci.yml --ref <候補branch> -f release_version=v2321.2.0
+```
