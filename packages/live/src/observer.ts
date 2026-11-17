@@ -49,7 +49,21 @@ export interface ObserverWorldConstants {
   y_sea: number | null
 }
 
+export interface ObserverServer {
+  name: string
+  version: string
+}
+
+export interface ObserverBounds {
+  y_min?: number
+  y_max?: number
+  center?: { x: number; z: number }
+  build_range?: number
+  world_border?: { center: { x: number; z: number }; size: number }
+}
+
 export interface ObserverHello {
+  server?: ObserverServer
   protocol: string
   mc_version: string
   supported_mc_versions: string[]
@@ -68,8 +82,10 @@ export interface ObserverErrorData {
   value?: string | number | boolean | null
   path?: string
   allowed?: (string | number | boolean)[]
-  bounds?: number[]
-  violating?: number[]
+  bounds?: number[] | ObserverBounds
+  violating?: number[] | { x: number; y: number; z: number }
+  limit?: number
+  requested?: number
 }
 
 export interface ObserverError {
@@ -196,6 +212,7 @@ const parseHello = (value: unknown): ObserverHello => {
       'origin',
       'world_constants',
       'permissions',
+      'server',
     ],
     'hello',
   )
@@ -218,6 +235,14 @@ const parseHello = (value: unknown): ObserverHello => {
       y_sea: constants.y_sea === null ? null : finiteNumber(constants.y_sea, 'hello.world_constants.y_sea'),
     },
   }
+  if (typeof hello.server !== 'undefined') {
+    const server = objectValue(hello.server, 'hello.server')
+    exactFields(server, ['name', 'version'], 'hello.server')
+    parsed.server = {
+      name: requiredString(server.name, 'hello.server.name'),
+      version: requiredString(server.version, 'hello.server.version'),
+    }
+  }
   const permissions = parsePermissions(hello.permissions)
   if (permissions) parsed.permissions = permissions
   return parsed
@@ -228,7 +253,19 @@ const parseErrorData = (value: unknown): ObserverErrorData | undefined => {
   const data = objectValue(value, 'frame.payload.error.data')
   exactFields(
     data,
-    ['reason', 'block_id', 'dimension', 'property', 'value', 'path', 'allowed', 'bounds', 'violating'],
+    [
+      'reason',
+      'block_id',
+      'dimension',
+      'property',
+      'value',
+      'path',
+      'allowed',
+      'bounds',
+      'violating',
+      'limit',
+      'requested',
+    ],
     'frame.payload.error.data',
   )
   if (typeof data.reason !== 'undefined' && typeof data.reason !== 'string') {
@@ -269,8 +306,43 @@ const parseErrorData = (value: unknown): ObserverErrorData | undefined => {
       throw new Error('frame.payload.error.data.allowed must contain JSON scalars')
     })
   }
-  const bounds = parseVector(data.bounds, 'frame.payload.error.data.bounds')
-  const violating = parseVector(data.violating, 'frame.payload.error.data.violating')
+  const pointXZ = (value: unknown, context: string): { x: number; z: number } => {
+    const point = objectValue(value, context)
+    exactFields(point, ['x', 'z'], context)
+    return { x: finiteNumber(point.x, `${context}.x`), z: finiteNumber(point.z, `${context}.z`) }
+  }
+  let bounds: ObserverErrorData['bounds']
+  if (typeof data.bounds !== 'undefined' && !Array.isArray(data.bounds)) {
+    const source = objectValue(data.bounds, 'error bounds')
+    exactFields(source, ['y_min', 'y_max', 'center', 'build_range', 'world_border'], 'error bounds')
+    const result: ObserverBounds = {}
+    for (const key of ['y_min', 'y_max', 'build_range'] as const) {
+      if (typeof source[key] !== 'undefined') result[key] = finiteNumber(source[key], `bounds.${key}`)
+    }
+    if (typeof source.center !== 'undefined') result.center = pointXZ(source.center, 'bounds.center')
+    if (typeof source.world_border !== 'undefined') {
+      const border = objectValue(source.world_border, 'bounds.world_border')
+      exactFields(border, ['center', 'size'], 'bounds.world_border')
+      result.world_border = {
+        center: pointXZ(border.center, 'bounds.world_border.center'),
+        size: finiteNumber(border.size, 'bounds.world_border.size'),
+      }
+    }
+    bounds = result
+  } else bounds = parseVector(data.bounds, 'frame.payload.error.data.bounds')
+  let violating: ObserverErrorData['violating']
+  if (typeof data.violating !== 'undefined' && !Array.isArray(data.violating)) {
+    const point = objectValue(data.violating, 'error violating')
+    exactFields(point, ['x', 'y', 'z'], 'error violating')
+    violating = {
+      x: finiteNumber(point.x, 'violating.x'),
+      y: finiteNumber(point.y, 'violating.y'),
+      z: finiteNumber(point.z, 'violating.z'),
+    }
+  } else violating = parseVector(data.violating, 'frame.payload.error.data.violating')
+  for (const key of ['limit', 'requested'] as const) {
+    if (typeof data[key] !== 'undefined') parsed[key] = finiteNumber(data[key], `error.${key}`)
+  }
   if (bounds) parsed.bounds = bounds
   if (violating) parsed.violating = violating
   return parsed

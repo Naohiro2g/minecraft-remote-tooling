@@ -344,6 +344,7 @@ const updateStreamHello = (state: StreamHelloState, hello: ObserverHello): void 
     detail(t('fieldMinecraft'), hello.mc_version),
     detail(t('fieldSupported'), hello.supported_mc_versions.join(', ')),
   ]
+  if (hello.server) items.push(detail(t('fieldServer'), `${hello.server.name} / ${hello.server.version}`))
   if (hello.permissions) {
     items.push(
       detail(t('fieldPermissions'), {
