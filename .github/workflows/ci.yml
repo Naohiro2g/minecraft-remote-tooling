@@ -5,6 +5,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      release_version:
+        description: Version label for the candidate Bridge image (no tag or release is published)
+        required: true
+        default: v2321.2.0
+        type: string
 
 permissions:
   contents: read
@@ -41,7 +47,7 @@ jobs:
           outputs: type=oci,dest=artifacts/bridge.oci.tar
           build-args: |
             SOURCE_REVISION=${{ github.sha }}
-            RELEASE_VERSION=sha-${{ github.sha }}
+            RELEASE_VERSION=${{ inputs.release_version || format('sha-{0}', github.sha) }}
       - name: Record candidate identity
         run: node scripts/build-candidate-manifest.mjs "${{ github.sha }}" "${{ steps.bridge.outputs.digest }}"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
