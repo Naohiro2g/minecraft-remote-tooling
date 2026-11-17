@@ -1,8 +1,13 @@
+import { readFileSync } from 'node:fs'
+import { parseConnectionTargets, type ConnectionTargets } from './connection-targets.ts'
+
 /**
  * Bridge configuration. TLS is terminated by Caddy in front, so the bridge
  * itself listens on plain ws on localhost (scratch-plan §2.3).
  */
 export interface BridgeConfig {
+  /** ID routing takes precedence over the legacy host allowlist. */
+  connectionTargets?: ConnectionTargets
   /** Interface the ws server binds to (behind Caddy). */
   wsHost: string
   /** Port the ws server binds to. */
@@ -49,7 +54,16 @@ function parseList(value: string | undefined): string[] | undefined {
  * @returns The resolved bridge configuration.
  */
 export function loadConfig(env: NodeJS.ProcessEnv): BridgeConfig {
+  const targetsFile = env.BRIDGE_TARGETS_FILE
+  const legacyKeys = ['BRIDGE_SANDBOX_ALLOWLIST', 'BRIDGE_DEFAULT_SANDBOX', 'BRIDGE_SANDBOX_PORT']
+  if (targetsFile && legacyKeys.some((key) => env[key] !== undefined)) {
+    throw new Error('BRIDGE_TARGETS_FILE cannot be combined with legacy BRIDGE_SANDBOX_* settings')
+  }
+  const connectionTargets = targetsFile
+    ? parseConnectionTargets(JSON.parse(readFileSync(targetsFile, 'utf8')))
+    : undefined
   const config = {
+    connectionTargets,
     wsHost: env.BRIDGE_WS_HOST ?? defaultConfig.wsHost,
     wsPort: env.BRIDGE_WS_PORT ? Number(env.BRIDGE_WS_PORT) : defaultConfig.wsPort,
     originAllowlist: parseList(env.BRIDGE_ORIGIN_ALLOWLIST) ?? defaultConfig.originAllowlist,

@@ -73,3 +73,10 @@ Ajvはtest用のdev dependencyで、wire Protocolのruntimeには依存を追加
 `src/mc_remote_stack/data/schemas/release-manifest.schema.json`からbytesのまま収容しました。
 出典のSHA-256はfixtureの`legacy_v1_schema_source.sha256`に記録しています。
 MIT Licenseの本文とcopyrightは同directoryの`STACK-LICENSE`に保持しています。
+
+## 接続先一覧（提案）
+
+`connection-targets-v1.schema.json`と`fixtures/connection-targets-v1.json`は、接続先ごとのID・ラベル・host・portの入力契約案です。
+採用判断はknowledgeの`00-hub/bridge-connection-targets-instructions_ja.md`に従います。
+構文検査に加え、IDの一意性と`default_target_id`が一覧の一件を指すことを利用側で検査します。
+wire、公開Release manifest、共有Protocol fixtureのschemaとは独立です。
